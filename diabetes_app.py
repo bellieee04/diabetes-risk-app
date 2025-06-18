@@ -11,12 +11,61 @@ st.set_page_config(
     page_icon="🩺"
 )
 
+st.markdown("""
+<style>
+/* Style both buttons side by side */
+.stButton > button {
+    width: 100%;
+    border-radius: 0.5rem;
+    padding: 0.6em 1em;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+/* Predict button - pink */
+div[data-testid="column"] div:nth-child(1) button {
+    background-color: #ff4b88;
+    color: white;
+    border: none;
+}
+div[data-testid="column"] div:nth-child(1) button:hover {
+    background-color: #ff69b4;
+}
+
+/* Reset button - dark navy */
+div[data-testid="column"] div:nth-child(2) button {
+    background-color: #1e293b;
+    color: white;
+    border: none;
+}
+div[data-testid="column"] div:nth-child(2) button:hover {
+    background-color: #334155;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # Light/Dark Mode Toggle
-mode = st.selectbox("🌗 Choose Theme Mode", ["Light", "Dark"])
+mode = st.selectbox("🌗 Choose Theme Mode", ["Dark", "Light"])
+
 if mode == "Dark":
-    st.markdown("<style>body { background-color: #0e1117; color: white; }</style>", unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #0e1117;
+            color: white;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 else:
-    st.markdown("<style>body { background-color: white; color: black; }</style>", unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: white;
+            color: black;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
 # Load model
 @st.cache_resource
