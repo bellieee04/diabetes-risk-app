@@ -1,100 +1,119 @@
 import streamlit as st
 import numpy as np
 import pickle
-from PIL import Image
-import base64
+import pandas as pd
+from datetime import datetime
+import os
 
-# ---------- CONFIGURATION ----------
+# ---------- Page Setup ----------
 st.set_page_config(page_title="AI Diabetes Risk Assessment", layout="centered")
 
-# ---------- FUNCTION: BACKGROUND IMAGE ----------
-def set_background_with_overlay(image_file):
-    with open(image_file, "rb") as image:
-        encoded = base64.b64encode(image.read()).decode()
-    st.markdown(
-        f"""
+# ---------- Background Styling ----------
+def set_background(image_file, overlay_opacity=0.6):
+    st.markdown(f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-                        url("data:image/jpeg;base64,{encoded}");
+            background: linear-gradient(rgba(0,0,0,{overlay_opacity}), rgba(0,0,0,{overlay_opacity})),
+                        url("data:image/jpeg;base64,{image_file}");
             background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            color: white;
-        }}
-        .stButton > button {{
-            background-color: #e6467e;
-            color: white;
-            font-weight: bold;
-        }}
-        .stTextInput input, .stNumberInput input {{
-            background-color: #1e1e1e;
-            color: white;
-        }}
-        .stExpanderHeader {{
-            color: white;
         }}
         </style>
-        """,
-        unsafe_allow_html=True
-    )
+    """, unsafe_allow_html=True)
 
-# Apply the styled background
-set_background_with_overlay("diabetes background.jpeg")
+def get_base64(file_path):
+    import base64
+    with open(file_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
-# ---------- LOAD MODEL ----------
+default_bg = get_base64("diabetes background.jpeg")
+healthy_bg = get_base64("healthy background.jpeg")
+unhealthy_bg = get_base64("unhealthy background.jpeg")
+
+set_background(default_bg)
+
+# ---------- Load Model ----------
 @st.cache_resource
 def load_model():
-    with open("diabetesmodel.pkl", "rb") as f:
-        return pickle.load(f)
+    with open("diabetesmodel.pkl", 'rb') as file:
+        return pickle.load(file)
 
 model = load_model()
 
-# ---------- PAGE TITLE ----------
-st.markdown("<h1 style='text-align: center;'>🩺 AI Diabetes Risk Assessment</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center;'>Know your risk using health indicators</h3>", unsafe_allow_html=True)
+# ---------- UI ----------
+st.markdown("## 🩺 AI Diabetes Risk Assessment")
+st.markdown("### Know your risk using health indicators")
 
-# ---------- RECOMMENDED RANGES ----------
+# Expandable guide
 with st.expander("📊 Recommended Input Ranges"):
     st.markdown("""
-    - 🔬 **Glucose**: 70 – 140 mg/dL  
-    - 💓 **Blood Pressure**: 80 – 120 mmHg  
-    - ⚖️ **BMI**: 18.5 – 24.9  
-    - 🎂 **Age**: All ages accepted, but risk increases with age
+    - **Glucose:** 70–140 mg/dL  
+    - **Blood Pressure:** 80–120 mmHg  
+    - **BMI:** 18.5–24.9  
+    - **Age:** 10–90 years  
     """)
 
-# ---------- USER INPUT FORM ----------
-st.subheader("📝 Enter Your Health Information")
+# Input form
+st.markdown("### 📝 Enter Your Health Information")
 
-glucose = st.number_input("🔬 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, help="Normal range: 70–140")
-blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0, help="Normal range: 80–120")
-bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1, help="Normal range: 18.5–24.9")
-age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1, help="Age in years")
+col1, col2 = st.columns([3, 1])
+with col1:
+    glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, value=100.0, step=1.0)
+    blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, value=90.0, step=1.0)
+    bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, value=22.0, step=0.1)
+    age = st.number_input("🎂 Age", min_value=5, max_value=120, value=30, step=1)
 
-# ---------- PREDICTION ----------
+# Session state to hold report data
+if 'report_data' not in st.session_state:
+    st.session_state.report_data = []
+
+# ---------- Predict Button ----------
 if st.button("🧠 Predict"):
     input_data = np.array([[glucose, blood_pressure, bmi, age]])
     prediction = model.predict(input_data)
 
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.session_state.report_data.append({
+        "Timestamp": now,
+        "Glucose": glucose,
+        "BloodPressure": blood_pressure,
+        "BMI": bmi,
+        "Age": age,
+        "Prediction": "Diabetic" if prediction[0] == 1 else "Non-Diabetic"
+    })
+
+    # Change background based on result
     if prediction[0] == 0:
         st.success("✅ You are NOT likely to have diabetes.")
-        st.image("healthy background.jpeg", caption="💚 Keep up the healthy lifestyle!", use_column_width=True)
-        with st.expander("💡 Health Tips"):
+        set_background(healthy_bg)
+        with st.expander("💡 Health Suggestions"):
             st.markdown("""
-            - 🏃 Stay active daily  
-            - 🥗 Eat balanced meals  
+            - ✅ Stay active daily  
+            - 🍽️ Eat balanced meals  
             - 🚫 Limit sugar intake  
             - 🩺 Get regular checkups  
-            - 😴 Prioritise sleep  
+            - 😴 Sleep well  
             """)
     else:
         st.error("⚠️ You ARE likely to have diabetes.")
-        st.image("unhealthy background.jpeg", caption="❤️ Take steps to lower your risk", use_column_width=True)
-        with st.expander("💡 Suggestions to Improve"):
+        set_background(unhealthy_bg)
+        with st.expander("💡 Suggestions to Reduce Risk"):
             st.markdown("""
-            - 🚫 Reduce sugary drinks  
-            - 🌾 Eat more fibre-rich foods  
-            - 🏃‍♀️ Exercise 30 mins daily  
-            - 🔍 Monitor blood sugar  
-            - 🧘‍♀️ Manage stress levels  
+            - 🚫 Cut back on sugary drinks  
+            - 🌾 Eat fibre-rich food  
+            - 🏃‍♀️ Exercise 30 mins/day  
+            - 🔬 Monitor glucose  
+            - 🧘 Reduce stress  
             """)
+
+# ---------- Reset Button ----------
+if st.button("🔁 Reset"):
+    st.experimental_rerun()
+
+# ---------- Download Report ----------
+if st.session_state.report_data:
+    df = pd.DataFrame(st.session_state.report_data)
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button("📤 Download Report", csv, "diabetes_report_history.csv", "text/csv")
+
+    st.markdown("### 📈 Health Tracking Graph")
+    st.line_chart(df.set_index("Timestamp")[["Glucose", "BloodPressure", "BMI"]])
