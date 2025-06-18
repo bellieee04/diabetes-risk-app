@@ -88,28 +88,28 @@ if st.button("🌟 Predict"):
     prediction = model.predict_proba(input_data)
     score = prediction[0][1] * 100
 
-    if score < 50:
-        st.success(f"✅ You are NOT likely to have diabetes. (Risk Score: {score:.2f}%)")
-        st.image("healthy background.jpeg", caption="💚 Keep up the healthy lifestyle!", use_container_width=True)
-        with st.expander("💡 Health Suggestions"):
-            st.markdown("""
-            - ✅ Stay active daily  
-            - 🍽️ Eat balanced meals  
-            - 🚫 Limit sugar intake  
-            - 🩺 Get regular checkups  
-            - 😴 Sleep well  
-            """)
-    else:
-        st.error(f"⚠️ You ARE likely to have diabetes. (Risk Score: {score:.2f}%)")
-        st.image("unhealthy background.jpeg", caption="❤️ Take steps to lower your risk", use_container_width=True)
-        with st.expander("💡 Suggestions to reduce risk"):
-            st.markdown("""
-            - 🚫 Cut back on sugary drinks  
-            - 🌾 Eat fibre-rich food  
-            - 🏃‍♀️ Exercise 30 mins/day  
-            - 🔬 Monitor glucose  
-            - 🧘 Reduce stress  
-            """)
+if score < 50:
+    st.success(f"✅ You are NOT likely to have diabetes. (Risk Score: {score:.2f}%) 🟢")
+    st.image("healthy background.jpeg", caption="💚 Keep up the healthy lifestyle!", use_container_width=True)
+    with st.expander("💡 Health Suggestions"):
+        st.markdown("""
+        - ✅ Stay active daily  
+        - 🍽️ Eat balanced meals  
+        - 🚫 Limit sugar intake  
+        - 🩺 Get regular checkups  
+        - 😴 Sleep well  
+        """)
+else:
+    st.error(f"⚠️ You ARE likely to have diabetes. (Risk Score: {score:.2f}%) 🔴")
+    st.image("unhealthy background.jpeg", caption="❤️ Take steps to lower your risk", use_container_width=True)
+    with st.expander("💡 Suggestions to reduce risk"):
+        st.markdown("""
+        - 🚫 Cut back on sugary drinks  
+        - 🌾 Eat fibre-rich food  
+        - 🏃‍♀️ Exercise 30 mins/day  
+        - 🔬 Monitor glucose  
+        - 🧘 Reduce stress  
+        """)
 
     # Downloadable report
     report = f"""
