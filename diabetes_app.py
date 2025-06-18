@@ -2,147 +2,91 @@ import streamlit as st
 import numpy as np
 import pickle
 import os
-from datetime import datetime
-import pandas as pd
+import base64
 
-# Page config
+# Page configuration
 st.set_page_config(
     page_title="AI Diabetes Risk Assessment",
     layout="centered",
     page_icon="🩺"
 )
 
-# ======================= Custom Theme Toggle ===========================
-mode = st.selectbox("🌗 Choose Theme Mode", ["Dark", "Light"], index=0)
-
+# Light/Dark Mode Toggle
+mode = st.selectbox("🌗 Choose Theme Mode", ["Light", "Dark"])
 if mode == "Dark":
-    st.markdown("""
-        <style>
-        .stApp {
-            background-color: #0e1117;
-            color: white;
-        }
-        .stButton>button {
-            background-color: #2c2f35;
-            color: white;
-            border-radius: 10px;
-            padding: 0.5em 2em;
-            font-weight: 600;
-            border: none;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    st.markdown("<style>body { background-color: #0e1117; color: white; }</style>", unsafe_allow_html=True)
 else:
-    st.markdown("""
-        <style>
-        .stApp {
-            background-color: #f0f2f6;
-            color: black;
-        }
-        .stButton>button {
-            background-color: #e5e5e5;
-            color: black;
-            border-radius: 10px;
-            padding: 0.5em 2em;
-            font-weight: 600;
-            border: none;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    st.markdown("<style>body { background-color: white; color: black; }</style>", unsafe_allow_html=True)
 
-# ======================= Model ===========================
+# Load model
 @st.cache_resource
 def load_model():
     return pickle.load(open("diabetesmodel.pkl", "rb"))
 
 model = load_model()
 
-# ======================= Background ===========================
+# Background setup
 def set_background(image_file):
     with open(image_file, "rb") as f:
-        encoded = f.read().hex()
-    st.markdown(
-        f"""
+        encoded = base64.b64encode(f.read()).decode()
+    st.markdown(f"""
         <style>
         .stApp {{
-            background-image: url("data:image/jpeg;base64,{encoded}");
+            background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url("data:image/jpeg;base64,{encoded}");
             background-size: cover;
+            background-repeat: no-repeat;
             background-attachment: fixed;
-            background-position: center;
-            filter: brightness(0.6);
         }}
         </style>
-        """,
-        unsafe_allow_html=True
-    )
+    """, unsafe_allow_html=True)
 
 set_background("diabetes background.jpeg")
 
-# ======================= App Title ===========================
+# Title
 st.markdown("<h1 style='text-align: center;'>🩺 AI Diabetes Risk Assessment</h1>", unsafe_allow_html=True)
 st.subheader("Know your risk using health indicators")
 
-# ======================= Ranges ===========================
+# Tips
 with st.expander("📊 Recommended Input Ranges"):
     st.markdown("""
     - **Glucose (mg/dL)**: 70 – 140  
     - **Blood Pressure (mmHg)**: 80 – 120  
-    - **BMI**: 18.5 – 24.9  
-    - **Age**: 10 – 90  
+    - **BMI (Body Mass Index)**: 18.5 – 24.9  
+    - **Age (years)**: 10 – 90  
     """)
 
-# ======================= Inputs ===========================
+# Inputs
 st.markdown("### 📝 Enter Your Health Information")
-
-glucose = st.number_input("🥼 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0)
+glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0)
 blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0)
 bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1)
 age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1)
 
-# ======================= Additional Health Metrics ===========================
+# Extra inputs (optional)
 with st.expander("➕ Additional Health Metrics"):
-    st.markdown("Future metrics like insulin, skin thickness, etc. coming soon!")
+    pregnancies = st.number_input("🤰 Pregnancies", min_value=0, max_value=15)
+    insulin = st.number_input("💉 Insulin Level", min_value=0.0, max_value=900.0)
+    skin = st.number_input("🩻 Skin Thickness", min_value=0.0, max_value=100.0)
 
-# ======================= Buttons ===========================
+# Action buttons
 col1, col2 = st.columns(2)
-
-result = None
-graph_data = []
-
 with col1:
-    if st.button("🔆 Predict"):
-        input_data = np.array([[glucose, blood_pressure, bmi, age]])
-        prediction = model.predict(input_data)
-        result = prediction[0]
-
-        # Graph tracking
-        log_file = "diabetes_predictions.csv"
-        new_entry = pd.DataFrame({
-            "Timestamp": [datetime.now()],
-            "Glucose": [glucose],
-            "BP": [blood_pressure],
-            "BMI": [bmi],
-            "Age": [age],
-            "Prediction": ["No Diabetes" if result == 0 else "Diabetes"]
-        })
-
-        if os.path.exists(log_file):
-            df = pd.read_csv(log_file)
-            df = pd.concat([df, new_entry], ignore_index=True)
-        else:
-            df = new_entry
-
-        df.to_csv(log_file, index=False)
-        graph_data = df
-
+    predict = st.button("🌟 Predict", use_container_width=True)
 with col2:
-    if st.button("🔄 Reset"):
-        st.experimental_rerun()
+    reset = st.button("🔄 Reset", use_container_width=True)
 
-# ======================= Result Output ===========================
-if result is not None:
-    if result == 0:
-        st.success("✅ You are NOT likely to have diabetes.")
+# Reset form
+if reset:
+    st.experimental_rerun()
+
+# Prediction logic
+if predict:
+    input_data = np.array([[glucose, blood_pressure, bmi, age]])
+    prediction = model.predict_proba(input_data)
+    score = prediction[0][1] * 100
+
+    if score < 50:
+        st.success(f"✅ You are NOT likely to have diabetes. (Risk Score: {score:.2f}%)")
         st.image("healthy background.jpeg", caption="💚 Keep up the healthy lifestyle!", use_container_width=True)
         with st.expander("💡 Health Suggestions"):
             st.markdown("""
@@ -153,7 +97,7 @@ if result is not None:
             - 😴 Sleep well  
             """)
     else:
-        st.error("⚠️ You ARE likely to have diabetes.")
+        st.error(f"⚠️ You ARE likely to have diabetes. (Risk Score: {score:.2f}%)")
         st.image("unhealthy background.jpeg", caption="❤️ Take steps to lower your risk", use_container_width=True)
         with st.expander("💡 Suggestions to reduce risk"):
             st.markdown("""
@@ -164,12 +108,17 @@ if result is not None:
             - 🧘 Reduce stress  
             """)
 
-    # Downloadable Report
-    with open("diabetes_predictions.csv", "rb") as file:
-        st.download_button("📤 Download Report", file, file_name="diabetes_report.csv", mime="text/csv")
+    # Report download
+    report = f"""
+    🩺 Diabetes Risk Report
 
-# ======================= Tracking Graph ===========================
-if os.path.exists("diabetes_predictions.csv"):
-    st.markdown("### 📅 Diabetes Risk Tracker")
-    graph_data = pd.read_csv("diabetes_predictions.csv")
-    st.line_chart(graph_data[["Glucose", "BP", "BMI"]])
+    Input Summary:
+    - Glucose: {glucose}
+    - Blood Pressure: {blood_pressure}
+    - BMI: {bmi}
+    - Age: {age}
+    - Risk Score: {score:.2f}%
+
+    Outcome: {"Low risk ✅" if score < 50 else "High risk ⚠️"}
+    """
+    st.download_button("📤 Download Report", report, file_name="diabetes_report.txt")
