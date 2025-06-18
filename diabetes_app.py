@@ -40,7 +40,7 @@ set_background("diabetes background.jpeg")
 st.markdown("<h1 style='text-align: center;'>🩺 AI Diabetes Risk Assessment</h1>", unsafe_allow_html=True)
 st.subheader("Know your risk using health indicators")
 
-# Tips
+# Input tips
 with st.expander("📊 Recommended Input Ranges"):
     st.markdown("""
     - **Glucose (mg/dL)**: 70 – 140  
@@ -49,18 +49,29 @@ with st.expander("📊 Recommended Input Ranges"):
     - **Age (years)**: 10 – 90  
     """)
 
-# Inputs
+# Input initialisation (safe defaults)
+default_values = {
+    "glucose": 50.0,
+    "bp": 50.0,
+    "bmi": 10.0,
+    "age": 5
+}
+for key, val in default_values.items():
+    if key not in st.session_state:
+        st.session_state[key] = val
+
+# User inputs
 st.markdown("### 📝 Enter Your Health Information")
 glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, key="glucose")
 blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0, key="bp")
 bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1, key="bmi")
 age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1, key="age")
 
-# Extra inputs (optional)
+# Optional metrics
 with st.expander("➕ Additional Health Metrics"):
-    pregnancies = st.number_input("🤰 Pregnancies", min_value=0, max_value=15)
-    insulin = st.number_input("💉 Insulin Level", min_value=0.0, max_value=900.0)
-    skin = st.number_input("🩻 Skin Thickness", min_value=0.0, max_value=100.0)
+    st.number_input("🤰 Pregnancies", min_value=0, max_value=15)
+    st.number_input("💉 Insulin Level", min_value=0.0, max_value=900.0)
+    st.number_input("🩻 Skin Thickness", min_value=0.0, max_value=100.0)
 
 # Action buttons
 col1, col2 = st.columns(2)
@@ -69,12 +80,10 @@ with col1:
 with col2:
     reset = st.button("🔄 Reset", use_container_width=True)
 
-# Reset logic (manual)
+# Reset logic (safe)
 if reset:
-    st.session_state.glucose = 50.0
-    st.session_state.bp = 50.0
-    st.session_state.bmi = 10.0
-    st.session_state.age = 5
+    for key in default_values:
+        st.session_state[key] = default_values[key]
     st.experimental_rerun()
 
 # Prediction logic
