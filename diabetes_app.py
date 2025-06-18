@@ -49,23 +49,12 @@ with st.expander("📊 Recommended Input Ranges"):
     - **Age (years)**: 10 – 90  
     """)
 
-# Input initialisation (safe defaults)
-default_values = {
-    "glucose": 50.0,
-    "bp": 50.0,
-    "bmi": 10.0,
-    "age": 5
-}
-for key, val in default_values.items():
-    if key not in st.session_state:
-        st.session_state[key] = val
-
-# User inputs
+# Inputs
 st.markdown("### 📝 Enter Your Health Information")
-glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, key="glucose")
-blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0, key="bp")
-bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1, key="bmi")
-age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1, key="age")
+glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0)
+blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0)
+bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1)
+age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1)
 
 # Optional metrics
 with st.expander("➕ Additional Health Metrics"):
@@ -73,21 +62,28 @@ with st.expander("➕ Additional Health Metrics"):
     st.number_input("💉 Insulin Level", min_value=0.0, max_value=900.0)
     st.number_input("🩻 Skin Thickness", min_value=0.0, max_value=100.0)
 
-# Action buttons
-col1, col2 = st.columns(2)
-with col1:
-    predict = st.button("🌟 Predict", use_container_width=True)
-with col2:
-    reset = st.button("🔄 Reset", use_container_width=True)
+# Styled Predict button
+custom_btn = """
+<style>
+div.stButton > button:first-child {
+    background-color: #FF4B4B;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    height: 3em;
+    width: 100%;
+    font-size: 1.1em;
+    border: none;
+    transition: background-color 0.3s;
+}
+div.stButton > button:hover {
+    background-color: #ff3333;
+}
+</style>
+"""
+st.markdown(custom_btn, unsafe_allow_html=True)
 
-# Reset logic (safe)
-if reset:
-    for key in default_values:
-        st.session_state[key] = default_values[key]
-    st.experimental_rerun()
-
-# Prediction logic
-if predict:
+if st.button("🌟 Predict"):
     input_data = np.array([[glucose, blood_pressure, bmi, age]])
     prediction = model.predict_proba(input_data)
     score = prediction[0][1] * 100
@@ -115,7 +111,7 @@ if predict:
             - 🧘 Reduce stress  
             """)
 
-    # Report download
+    # Downloadable report
     report = f"""
 🩺 Diabetes Risk Report
 
