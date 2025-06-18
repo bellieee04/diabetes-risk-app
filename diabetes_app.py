@@ -11,13 +11,6 @@ st.set_page_config(
     page_icon="🩺"
 )
 
-# Light/Dark Mode Toggle
-mode = st.selectbox("🌗 Choose Theme Mode", ["Light", "Dark"])
-if mode == "Dark":
-    st.markdown("<style>body { background-color: #0e1117; color: white; }</style>", unsafe_allow_html=True)
-else:
-    st.markdown("<style>body { background-color: white; color: black; }</style>", unsafe_allow_html=True)
-
 # Load model
 @st.cache_resource
 def load_model():
@@ -36,6 +29,7 @@ def set_background(image_file):
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
+            background-position: center;
         }}
         </style>
     """, unsafe_allow_html=True)
@@ -57,10 +51,10 @@ with st.expander("📊 Recommended Input Ranges"):
 
 # Inputs
 st.markdown("### 📝 Enter Your Health Information")
-glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0)
-blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0)
-bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1)
-age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1)
+glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, key="glucose")
+blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0, key="bp")
+bmi = st.number_input("⚖️ BMI", min_value=10.0, max_value=60.0, step=0.1, key="bmi")
+age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1, key="age")
 
 # Extra inputs (optional)
 with st.expander("➕ Additional Health Metrics"):
@@ -75,8 +69,12 @@ with col1:
 with col2:
     reset = st.button("🔄 Reset", use_container_width=True)
 
-# Reset form
+# Reset logic (manual)
 if reset:
+    st.session_state.glucose = 50.0
+    st.session_state.bp = 50.0
+    st.session_state.bmi = 10.0
+    st.session_state.age = 5
     st.experimental_rerun()
 
 # Prediction logic
@@ -110,15 +108,15 @@ if predict:
 
     # Report download
     report = f"""
-    🩺 Diabetes Risk Report
+🩺 Diabetes Risk Report
 
-    Input Summary:
-    - Glucose: {glucose}
-    - Blood Pressure: {blood_pressure}
-    - BMI: {bmi}
-    - Age: {age}
-    - Risk Score: {score:.2f}%
+Input Summary:
+- Glucose: {glucose}
+- Blood Pressure: {blood_pressure}
+- BMI: {bmi}
+- Age: {age}
+- Risk Score: {score:.2f}%
 
-    Outcome: {"Low risk ✅" if score < 50 else "High risk ⚠️"}
-    """
+Outcome: {"Low risk ✅" if score < 50 else "High risk ⚠️"}
+"""
     st.download_button("📤 Download Report", report, file_name="diabetes_report.txt")
