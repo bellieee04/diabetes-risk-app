@@ -1,25 +1,20 @@
 import streamlit as st
 import numpy as np
 import pickle
-import kagglehub
-import os
 
 # Page configuration
 st.set_page_config(page_title="AI Diabetes Risk Assessment", layout="centered")
 
-# Load model from KaggleHub
+# Load model locally
 @st.cache_resource
 def load_model():
-    path = kagglehub.model_download("gsaha123/diabetes-risk-assessment/scikitLearn/2gd/1")
-    model_file = os.path.join(path, "diabetesmodel.pkl")
-    return pickle.load(open(model_file, 'rb'))
+    with open("diabetesmodel.pkl", "rb") as f:
+        return pickle.load(f)
 
 model = load_model()
 
 # Title
 st.title("🩺 AI Diabetes Risk Assessment")
-
-# Background (optional, not natively supported — can use HTML/CSS with `st.markdown` but let’s focus on function)
 
 # Input form
 st.header("Enter your health info")
