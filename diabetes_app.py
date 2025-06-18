@@ -8,28 +8,41 @@ import base64
 st.set_page_config(page_title="AI Diabetes Risk Assessment", layout="centered")
 
 # ---------- FUNCTION: BACKGROUND IMAGE ----------
-def set_background(image_file):
+def set_background_with_overlay(image_file):
     with open(image_file, "rb") as image:
         encoded = base64.b64encode(image.read()).decode()
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: url("data:image/jpeg;base64,{encoded}");
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                        url("data:image/jpeg;base64,{encoded}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            transition: background 0.5s ease-in-out;
+            color: white;
+        }}
+        .stButton > button {{
+            background-color: #e6467e;
+            color: white;
+            font-weight: bold;
+        }}
+        .stTextInput input, .stNumberInput input {{
+            background-color: #1e1e1e;
+            color: white;
+        }}
+        .stExpanderHeader {{
+            color: white;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# Show default background
-set_background("diabetes background.jpeg")
+# Apply the styled background
+set_background_with_overlay("diabetes background.jpeg")
 
-# ---------- FUNCTION: LOAD MODEL ----------
+# ---------- LOAD MODEL ----------
 @st.cache_resource
 def load_model():
     with open("diabetesmodel.pkl", "rb") as f:
@@ -37,12 +50,11 @@ def load_model():
 
 model = load_model()
 
-# ---------- HEADER ----------
+# ---------- PAGE TITLE ----------
 st.markdown("<h1 style='text-align: center;'>🩺 AI Diabetes Risk Assessment</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center;'>Know your risk using health indicators</h3>", unsafe_allow_html=True)
-st.write("")
 
-# ---------- EXPANDER: GUIDE ----------
+# ---------- RECOMMENDED RANGES ----------
 with st.expander("📊 Recommended Input Ranges"):
     st.markdown("""
     - 🔬 **Glucose**: 70 – 140 mg/dL  
@@ -51,7 +63,7 @@ with st.expander("📊 Recommended Input Ranges"):
     - 🎂 **Age**: All ages accepted, but risk increases with age
     """)
 
-# ---------- USER INPUTS ----------
+# ---------- USER INPUT FORM ----------
 st.subheader("📝 Enter Your Health Information")
 
 glucose = st.number_input("🔬 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, help="Normal range: 70–140")
