@@ -122,10 +122,3 @@ if predict:
     Outcome: {"Low risk ✅" if score < 50 else "High risk ⚠️"}
     """
     st.download_button("📤 Download Report", report, file_name="diabetes_report.txt")
-
-# Optional next features
-st.markdown("---")
-st.caption("Let us know if you'd like:")
-st.markdown("- 🌓 Light/dark mode toggle (already added!)  
-- 📈 More detailed feedback (Risk Score shown!)  
-- 🩺 Additional health metrics (included in expandable section)")
