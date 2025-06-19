@@ -71,6 +71,15 @@ if bmi:
         bmi_status = "Obese"
     st.markdown(f"**Calculated BMI**: `{bmi}` ({bmi_status})")
 
+# --- Recommended Ranges ---
+with st.expander("📊 Recommended Input Ranges"):
+    st.markdown("""
+    - **Glucose (mg/dL)**: 70 – 140  
+    - **Blood Pressure (mmHg)**: 80 – 120  
+    - **BMI (auto-calculated)**: 18.5 – 24.9  
+    - **Age (years)**: 10 – 90  
+    """)
+
 # --- Health Info Inputs ---
 st.markdown("## 📝 Enter Your Health Indicators")
 glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, help="Normal range: 70–140 mg/dL")
