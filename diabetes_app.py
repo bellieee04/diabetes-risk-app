@@ -113,7 +113,7 @@ if st.button("🌟 Predict My Diabetes Risk"):
 
     st.markdown("---")
     if score < 50:
-        st.success(f"✅ Low Risk! (Score: {score:.2f}%)")
+        st.success(f"✅ {name}, you are NOT likely to have diabetes. (Risk Score: {score:.2f}%)")
         st.image("healthy background.jpeg", caption="💚 Keep up the healthy lifestyle!", use_container_width=True)
         with st.expander("💡 Healthy Living Tips"):
             st.markdown("""
@@ -124,7 +124,7 @@ if st.button("🌟 Predict My Diabetes Risk"):
             - 😴 Prioritise quality sleep  
             """)
     else:
-        st.error(f"⚠️ High Risk! (Score: {score:.2f}%)")
+        st.error(f"⚠️ {name}, you ARE likely to have diabetes. (Risk Score: {score:.2f}%)")
         st.image("unhealthy background.jpeg", caption="❤️ Time to prioritise your health", use_container_width=True)
         with st.expander("💡 Tips to Lower Risk"):
             st.markdown("""
