@@ -152,7 +152,7 @@ BMI: {bmi} ({bmi_status})
 Glucose Level: {glucose} mg/dL
 Blood Pressure: {blood_pressure} mmHg
 
-Estimated Diabetes Risk: {score:.2f}%% → {"Low ✅" if score < 50 else "High ⚠️"}
+Estimated Diabetes Risk: {score:.2f}% → {"Low ✅" if score < 50 else "High ⚠️"}
 
 Thank you for using our AI Health Assistant. Stay healthy!
 """
