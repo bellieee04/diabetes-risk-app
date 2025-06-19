@@ -82,6 +82,16 @@ with st.expander("📊 Recommended Input Ranges"):
 
 # --- Health Info Inputs ---
 st.markdown("## 📝 Enter Your Health Indicators")
+
+# 📊 Recommended Input Ranges (now placed under health inputs)
+with st.expander("📊 Recommended Input Ranges"):
+    st.markdown("""
+    - **Glucose (mg/dL)**: 70 – 140  
+    - **Blood Pressure (mmHg)**: 80 – 120  
+    - **BMI (auto-calculated)**: 18.5 – 24.9  
+    - **Age (years)**: 10 – 90  
+    """)
+
 glucose = st.number_input("🧪 Glucose (mg/dL)", min_value=50.0, max_value=300.0, step=1.0, help="Normal range: 70–140 mg/dL")
 blood_pressure = st.number_input("💓 Blood Pressure (mmHg)", min_value=50.0, max_value=200.0, step=1.0, help="Normal: 80–120 mmHg")
 age = st.number_input("🎂 Age", min_value=5, max_value=120, step=1)
